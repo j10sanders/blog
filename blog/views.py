@@ -78,3 +78,8 @@ def login_post():
     login_user(user)
     return redirect(request.args.get('next') or url_for("entries"))
 
+@app.route("/edit/<id>/edit")
+def edit_entry_get(id):
+    #instantly edits post
+    entry = session.query(Entry)
+    return render_template("edit_entry.html", entry = entry.get(id))
