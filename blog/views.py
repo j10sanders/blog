@@ -6,6 +6,9 @@ from flask import flash
 from flask.ext.login import login_user
 from werkzeug.security import check_password_hash
 from .database import User
+from flask import request, redirect, url_for
+from flask.ext.login import login_required
+
 
 PAGINATE_BY = 10
 
@@ -37,12 +40,12 @@ def entries(page=1):
     )
 
 @app.route("/entry/add", methods=["GET"])
+@login_required
 def add_entry_get():
     return render_template("add_entry.html")
-    
-from flask import request, redirect, url_for
 
 @app.route("/entry/add", methods=["POST"])
+@login_required
 def add_entry_post():
     entry = Entry(
         title=request.form["title"],
@@ -52,15 +55,17 @@ def add_entry_post():
     session.commit()
     return redirect(url_for("entries"))
     
-@app.route("/entry/<int:id>")
-def view_entry(id):
-    entry = session.query(Entry).filter_by(id=id)
-    return render_template("single_entry.html", entry=entry)
+@app.route("/entry/<id>", methods=["GET"])
+def get_entry(id):
+    entry = session.query(Entry)
+
+    return render_template("render_entry.html", entry = entry.get(id))
     
 @app.route("/login", methods=["GET"])
 def login_get():
     return render_template("login.html")
-    
+
+
 @app.route("/login", methods=["POST"])
 def login_post():
     email = request.form["email"]
@@ -72,3 +77,4 @@ def login_post():
 
     login_user(user)
     return redirect(request.args.get('next') or url_for("entries"))
+
