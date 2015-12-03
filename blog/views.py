@@ -7,7 +7,7 @@ from flask.ext.login import login_user
 from werkzeug.security import check_password_hash
 from .database import User
 from flask import request, redirect, url_for
-from flask.ext.login import login_required
+from flask.ext.login import login_required, current_user
 
 
 PAGINATE_BY = 10
@@ -50,6 +50,7 @@ def add_entry_post():
     entry = Entry(
         title=request.form["title"],
         content=request.form["content"],
+        author=current_user
     )
     session.add(entry)
     session.commit()
@@ -78,8 +79,30 @@ def login_post():
     login_user(user)
     return redirect(request.args.get('next') or url_for("entries"))
 
-@app.route("/edit/<id>/edit")
+@app.route("/entry/<id>/edit", methods=["GET"])
 def edit_entry_get(id):
-    #instantly edits post
     entry = session.query(Entry)
     return render_template("edit_entry.html", entry = entry.get(id))
+    
+@app.route("/entry/<id>/edit", methods=["POST"])
+@login_required
+def edit_entry_post(id):
+    entry = session.query(Entry).get(id)
+    entry.title = request.form["title"]
+    entry.content = request.form["content"]
+    session.commit()
+    return redirect(url_for("entries"))
+    
+    
+@app.route("/entry/<id>/delete", methods=["GET"])
+def delete_entry_get(id):
+    entry = session.query(Entry)
+    return render_template("delete_entry.html", entry = entry.get(id))
+        
+@app.route("/entry/<id>/delete", methods=["POST"])
+@login_required
+def delete_entry_post(id):
+    entry = session.query(Entry).get(id)
+    session.delete(entry)
+    session.commit()
+    return redirect(url_for("entries"))
