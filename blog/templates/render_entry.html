@@ -10,8 +10,12 @@
 {{ macros.render_entry(entry) }}
 
 <p>
-Author: {{ entry.author.name }}    
+Author: {{ entry.author.name|default('unknown') }}   
 </p>
 
+ <p>
+      <!-- This is a comment  <li><a href="/entry/{{ entry.id }}/edit">Edit This Entry</a></li> --> 
+       <a href="{{ url_for( 'edit_entry_post', id = entry.id)}}">   Edit This Entry    </a>
+</p>
 
 {% endblock %}
